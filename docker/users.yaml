@@ -1,0 +1,68 @@
+version: '3.9'
+
+services:
+
+  users_php:
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    container_name: users_php
+    volumes:
+      - ${USERS_DOCKER_APP_PATH}:/var/www:rw
+    depends_on:
+      - users_postgres
+    networks:
+      microservices:
+        ipv4_address: ${USERS_FPM}
+
+  users_nginx:
+    container_name: users_nginx
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    environment:
+      FPM_HOST: ${USERS_FPM_HOST}
+      SERVER_NAME: ${USERS_SERVER_NAME}
+    volumes:
+      - ${USERS_DOCKER_APP_PATH}:/var/www:rw
+    depends_on:
+      - users_php
+    networks:
+      microservices:
+        ipv4_address: ${USERS_NGINX}
+
+  users_postgres:
+    container_name: users_postgres
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_MULTIPLE_DATABASES: ${USERS_DB_NAME}, ${USERS_DB_NAME_TEST}
+      POSTGRES_USER: ${USERS_DB_USER}
+      POSTGRES_PASSWORD: ${USERS_DB_PASSWORD}
+    healthcheck:
+      test: [ CMD-SHELL, pg_isready, -U, $USERS_DB_USER, -d, $USERS_DB_NAME ]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+    volumes:
+      - ./postgres/init.sh:/docker-entrypoint-initdb.d/init.sh
+      - users-storage:/var/lib/postgresql/data:rw
+    networks:
+      microservices:
+        ipv4_address: ${USERS_PG_ENDPOINT}
+
+volumes:
+  users-storage:
+    name: users-storage
+    driver: local
+
+networks:
+  microservices:
+    ipam:
+      config:
+        - subnet: ${DOCKER_PREFIX_NETWORK}.0.1/16
+
+
+

@@ -1,0 +1,31 @@
+server {
+    server_name ${SERVER_NAME};
+    root /var/www/public;
+
+    location / {
+        #proxy_pass http://localhost:27017/;
+        try_files $uri /index.php$is_args$args;
+        client_max_body_size 40m;
+    }
+
+    location ~ ^/index\.php(/|$) {
+        #proxy_pass http://localhost:27017/;
+        fastcgi_pass ${FPM_HOST}:9000;
+        fastcgi_split_path_info ^(.+\.php)(/.*)$;
+        fastcgi_read_timeout 3000;
+        include fastcgi_params;
+
+        client_max_body_size 40m;
+
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        fastcgi_param DOCUMENT_ROOT $realpath_root;
+        internal;
+    }
+
+    location ~ \.php$ {
+        return 404;
+    }
+
+    error_log /var/log/nginx/project_error.log;
+    access_log /var/log/nginx/project_access.log;
+}
