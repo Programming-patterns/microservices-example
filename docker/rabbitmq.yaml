@@ -1,0 +1,26 @@
+version: '3.9'
+
+services:
+  rabbitmq:
+    container_name: "rabbitmq"
+    image: rabbitmq:3.10.6-management-alpine
+    environment:
+      - RABBITMQ_DEFAULT_USER=$RABBITMQ_USER
+      - RABBITMQ_DEFAULT_PASS=$RABBITMQ_PASSWORD
+    ports:
+      # AMQP protocol port
+      - '5672:5672'
+      # HTTP management UI
+      - '15672:15672'
+    networks:
+      microservices:
+        ipv4_address: ${RABBITMQ_HOST}
+
+networks:
+  microservices:
+    ipam:
+      config:
+        - subnet: ${DOCKER_PREFIX_NETWORK}.0.1/16
+
+
+

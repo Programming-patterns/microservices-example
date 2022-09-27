@@ -9,6 +9,7 @@ ARG USER_NAME=xdocker
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpng-dev \
+    libpq-dev \
     libonig-dev \
     libjpeg62-turbo-dev \
     libfreetype6-dev \
@@ -23,6 +24,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     git \
     curl \
+    cron \
     # and admin tools
     openssh-client \
     net-tools \
@@ -42,7 +44,7 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN curl -s https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Install extensions
-RUN docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl sockets
+RUN docker-php-ext-install pdo pdo_pgsql pgsql pdo_mysql mbstring zip exif pcntl sockets
 RUN docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg
 RUN docker-php-ext-install gd
 

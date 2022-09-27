@@ -31,7 +31,7 @@ services:
       microservices:
         ipv4_address: ${PROJECTS_NGINX}
 
-  users_postgres:
+  projects_postgres:
     container_name: projects_postgres
     build:
       context: ./postgres
