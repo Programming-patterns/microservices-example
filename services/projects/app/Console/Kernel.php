@@ -2,6 +2,8 @@
 
 namespace App\Console;
 
+use App\Console\Commands\GetMessage;
+use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -15,7 +17,14 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        $logRabbitMqPath = storage_path(
+            'logs/rabbit-mq-' . Carbon::today()->format('Y-m-d') . '.log'
+        );
+
+        $schedule->command(GetMessage::class)
+            ->everyMinute()
+            ->withoutOverlapping()
+            ->appendOutputTo($logRabbitMqPath);
     }
 
     /**
